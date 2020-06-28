@@ -5,9 +5,14 @@
 var font;
 var curTime;
 var oldTime;
-var isBurst = false;
 var vehicles = [];
+var timer = 0;
+var ClockState = { Idle: 0, burst: 1 };
+var state = ClockState.Idle;
+
+//Const Variables
 const myFrameRate = 30;
+const burstDuration = 1;
 const clockPosX = screen.width / 2;
 const clockPosY = screen.height / 2.2;
 const rectPosX = 0;
@@ -36,7 +41,29 @@ function draw() {
     fill(3, 101, 100);
 
     curTime = getCurTimeString();
-    updateEveryMinute();
+
+    if (state == ClockState.burst) {
+        timer++;
+
+        if (timer > myFrameRate * burstDuration) {
+            updateTime();
+            state = ClockState.Idle;
+        }
+
+        for (var i = 0; i < vehicles.length; i++) {
+            var v = vehicles[i];
+            v.burst();
+            v.update();
+            v.show();
+        }
+    }
+
+
+    if (isTimeChanged()) {
+        state = ClockState.burst;
+    }
+
+    //Mainloop
     for (var i = 0; i < vehicles.length; i++) {
         var v = vehicles[i];
         v.behaviour();
@@ -55,24 +82,16 @@ function init() {
     }
 }
 
-function updateEveryMinute() {
-    if (curTime != oldTime) {
-
-        // for (var i = 0; i < vehicle.length; i++){
-        //     var v = vehicles[i];
-        //     v.burst();
-        // }
-
-        curTime = getCurTimeString();
-        var points = font.textToPoints(curTime, clockPosX, clockPosY, fontSize);
-        vehicles = [];
-        for (var i = 0; i < points.length; i++) {
-            var pt = points[i];
-            var vehicle = new Vehicle(pt.x, pt.y);
-            vehicles.push(vehicle);
-        }
-        oldTime = curTime;
+function updateTime() {
+    curTime = getCurTimeString();
+    var points = font.textToPoints(curTime, clockPosX, clockPosY, fontSize);
+    vehicles = [];
+    for (var i = 0; i < points.length; i++) {
+        var pt = points[i];
+        var vehicle = new Vehicle(pt.x, pt.y);
+        vehicles.push(vehicle);
     }
+    oldTime = curTime;
 }
 
 function getCurTimeString() {
@@ -87,4 +106,8 @@ function getCurTimeString() {
 
     let curTime = hour().toString() + ":" + minString;
     return curTime;
+}
+
+function isTimeChanged() {
+    return curTime != oldTime;
 }

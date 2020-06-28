@@ -67,3 +67,8 @@ Vehicle.prototype.arrive = function (target) {
     steer.limit(this.maxForce);
     return steer;
 }
+
+
+Vehicle.prototype.burst = function () {
+    return this.applyForce(createVector(random(-width, width), random(-height, height)).mult(0.01));
+}
